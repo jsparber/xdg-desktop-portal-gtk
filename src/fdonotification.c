@@ -206,6 +206,7 @@ call_notify (GDBusConnection *connection,
   guint i;
   GVariantBuilder hints_builder;
   GVariant *icon;
+  GVariant *sound;
   const char *body;
   const char *title;
   g_autofree char *icon_name = NULL;
@@ -333,6 +334,28 @@ call_notify (GDBusConnection *connection,
 
   if (icon_name == NULL)
     icon_name = g_strdup ("");
+
+  sound = g_variant_lookup_value (notification, "sound", NULL);
+  if (sound != NULL)
+    {
+      const char *key;
+      g_autoptr(GVariant) value = NULL;
+
+      g_variant_get (sound, "(&sv)", &key, &value);
+      if (strcmp (key, "file") == 0)
+        {
+           // FIXME: according to the specs this should be a path but is a URI, we can maybe change it in xdg-dekstop-portal
+           g_variant_builder_add (&hints_builder, "{sv}", "sound-file", value);
+        }
+      else if (strcmp (key, "themed") == 0)
+        {
+           g_variant_builder_add (&hints_builder, "{sv}", "sound-name", value);
+        }
+      else if (strcmp (key, "bytes") == 0)
+        {
+           // TODO: we need to write sound bytes to a file since we can't pass it to FDO
+        }
+    }
 
   if (!g_variant_lookup (notification, "body", "&s", &body))
     body = "";
