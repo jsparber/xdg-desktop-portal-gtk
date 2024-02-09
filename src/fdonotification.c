@@ -213,6 +213,7 @@ call_notify (GDBusConnection *connection,
   const char *dummy;
   g_autoptr(GVariant) buttons = NULL;
   const char *priority;
+  const char *grouping_id;
 
   if (fdo_notify_subscription == 0)
     {
@@ -265,6 +266,8 @@ call_notify (GDBusConnection *connection,
 
   g_variant_builder_init (&hints_builder, G_VARIANT_TYPE ("a{sv}"));
   g_variant_builder_add (&hints_builder, "{sv}", "desktop-entry", g_variant_new_string (fdo->app_id));
+  if (g_variant_lookup (notification, "grouping-id", "&s", &grouping_id))
+    g_variant_builder_add (&hints_builder, "{sv}", "x-gnome-grouping-id", g_variant_new_string (grouping_id));
   if (g_variant_lookup (notification, "priority", "&s", &priority))
     urgency = urgency_from_priority (priority);
   else
